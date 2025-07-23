@@ -1,15 +1,26 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
-import { BrowserRouter } from 'react-router-dom'
-import { AppContextProvider } from './context/AppContext.jsx'
+// src/main.jsx (or index.jsx)
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 
-createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-  <AppContextProvider>
-      <App />
-    </AppContextProvider>
-  </BrowserRouter>,
-)
+import App from './App';
 
+import { AuthProvider } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
+import { HotelProvider } from './context/HotelContext';
+
+import './index.css';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <AuthProvider>
+        <HotelProvider>
+          <CartProvider>
+            <App />
+          </CartProvider>
+        </HotelProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);
