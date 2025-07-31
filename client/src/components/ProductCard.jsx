@@ -1,40 +1,32 @@
 import React from 'react';
+import { addToCart } from '../api/cart';
+import { useAuth } from '../context/AuthContext';
 
 const ProductCard = ({ product }) => {
+  const { user } = useAuth(); // Logged-in hotel user
+
+  const handleAddToCart = async () => {
+    if (!user) return alert("Login first");
+
+    try {
+      await addToCart(user._id, product._id);
+      alert("Added to cart!");
+    } catch (err) {
+      alert("Error adding to cart");
+    }
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition duration-300 ease-in-out overflow-hidden">
-      {/* Product Image */}
-      <div className="relative">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-48 object-cover"
-        />
-        {/* Optional badge */}
-        {product.inStock === false && (
-          <span className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded">
-            Out of Stock
-          </span>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-4 flex flex-col justify-between h-36">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-800">{product.name}</h3>
-          <p className="text-green-600 font-bold mt-1">₹{product.price}</p>
-        </div>
-
-        {/* Action Button */}
-        <button
-          disabled={product.inStock === false}
-          className={`mt-3 w-full py-1.5 rounded text-white text-sm font-medium
-            ${product.inStock ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}
-          `}
-        >
-          {product.inStock ? 'Add to Cart' : 'Unavailable'}
-        </button>
-      </div>
+    <div className="border rounded p-3">
+      <img src={product.image} alt={product.name} className="w-full h-40 object-cover" />
+      <h2 className="font-bold mt-2">{product.name}</h2>
+      <p className="text-sm">₹{product.price}</p>
+      <button
+        onClick={handleAddToCart}
+        className="bg-blue-500 text-white mt-2 px-3 py-1 rounded"
+      >
+        Add to Cart
+      </button>
     </div>
   );
 };

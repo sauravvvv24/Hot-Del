@@ -1,12 +1,13 @@
+// src/pages/SellerSignup.jsx
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
 const SellerSignup = () => {
-  const [form, setForm] = useState({ 
-    name: '', 
-    email: '', 
-    password: '' 
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -15,8 +16,7 @@ const SellerSignup = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
-    
-    // Clear error when user types
+
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
@@ -24,40 +24,32 @@ const SellerSignup = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!form.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-    
-    if (!form.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    
-    if (!form.password) {
-      newErrors.password = 'Password is required';
-    } else if (form.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-    
+    if (!form.name.trim()) newErrors.name = 'Name is required';
+    if (!form.email) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = 'Invalid email';
+    if (!form.password) newErrors.password = 'Password is required';
+    else if (form.password.length < 6) newErrors.password = 'Minimum 6 characters';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsLoading(true);
-    
+
     try {
-      await axios.post('http://localhost:5000/api/auth/signup', {
+      await axios.post('http://localhost:5000/api/auth/register', {
         ...form,
         role: 'seller',
       });
-      navigate('/seller-login', { state: { successMessage: 'Registration successful! Please log in.' } });
+
+      // Show success and redirect
+      alert('Seller registration successful! Please log in.');
+      navigate('/seller-login');
     } catch (err) {
       const errorMsg = err.response?.data?.message || 'Signup failed. Please try again.';
       setErrors({ server: errorMsg });
@@ -75,15 +67,10 @@ const SellerSignup = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <h2 className="text-3xl font-extrabold text-gray-900">
-            Create Seller Account
-          </h2>
+          <h2 className="text-3xl font-extrabold text-gray-900">Create Seller Account</h2>
           <p className="mt-2 text-sm text-gray-600">
             Already have an account?{' '}
-            <Link 
-              to="/seller-login" 
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
+            <Link to="/seller-login" className="font-medium text-indigo-600 hover:text-indigo-500">
               Sign in
             </Link>
           </p>
@@ -96,6 +83,7 @@ const SellerSignup = () => {
         )}
 
         <form className="space-y-6" onSubmit={handleSignup}>
+          {/* Name Input */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
               Seller Name
@@ -106,17 +94,14 @@ const SellerSignup = () => {
               type="text"
               autoComplete="name"
               placeholder="Your business name"
-              className={`appearance-none relative block w-full px-4 py-3 border ${
-                errors.name ? 'border-red-300' : 'border-gray-300'
-              } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+              className={`appearance-none relative block w-full px-4 py-3 border ${errors.name ? 'border-red-300' : 'border-gray-300'} rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
               value={form.name}
               onChange={handleChange}
             />
-            {errors.name && (
-              <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-            )}
+            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
           </div>
 
+          {/* Email Input */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               Email Address
@@ -127,17 +112,14 @@ const SellerSignup = () => {
               type="email"
               autoComplete="email"
               placeholder="you@example.com"
-              className={`appearance-none relative block w-full px-4 py-3 border ${
-                errors.email ? 'border-red-300' : 'border-gray-300'
-              } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+              className={`appearance-none relative block w-full px-4 py-3 border ${errors.email ? 'border-red-300' : 'border-gray-300'} rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
               value={form.email}
               onChange={handleChange}
             />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-            )}
+            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
           </div>
 
+          {/* Password Input */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Password
@@ -148,17 +130,14 @@ const SellerSignup = () => {
               type="password"
               autoComplete="new-password"
               placeholder="••••••••"
-              className={`appearance-none relative block w-full px-4 py-3 border ${
-                errors.password ? 'border-red-300' : 'border-gray-300'
-              } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+              className={`appearance-none relative block w-full px-4 py-3 border ${errors.password ? 'border-red-300' : 'border-gray-300'} rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
               value={form.password}
               onChange={handleChange}
             />
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-            )}
+            {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
           </div>
 
+          {/* Terms Checkbox */}
           <div className="flex items-center">
             <input
               id="terms"
@@ -175,6 +154,7 @@ const SellerSignup = () => {
             </label>
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}

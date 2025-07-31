@@ -20,7 +20,6 @@ const EditProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const res = await fetch(`http://localhost:5000/api/products/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

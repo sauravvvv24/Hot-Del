@@ -14,7 +14,7 @@ const HeroBanner = () => {
         className=" absolute inset-0
            bg-opacity-40 z-10"
       />
-      <div className="relative z-20 text-center text-white px-6">
+      <div className="relative z-20 text-center text-Black px-6">
         <h1 className="text-4xl md:text-6xl font-bold mb-4">
           Premium Dairy & Frozen Goods
         </h1>

@@ -4,19 +4,37 @@ import { useNavigate, Link } from 'react-router-dom';
 const Signup = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'hotel' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (error) setError('');
+  };
+
+  const validateForm = () => {
+    if (!form.name.trim() || !form.email.trim() || !form.password.trim()) {
+      setError('All fields are required.');
+      return false;
+    }
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(form.email)) {
+      setError('Invalid email format.');
+      return false;
+    }
+    if (form.password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.name || !form.email || !form.password) {
-      setError('All fields are required.');
-      return;
-    }
+    if (!validateForm()) return;
+
+    setLoading(true);
 
     try {
       const res = await fetch('http://localhost:5000/api/auth/register', {
@@ -35,68 +53,86 @@ const Signup = () => {
       }
     } catch (err) {
       setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-3xl font-bold text-center text-blue-700 mb-6">Create an Account</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
+        <h2 className="text-3xl font-bold text-center text-blue-700 mb-6">
+          Create an Account
+        </h2>
 
-        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 text-sm rounded-md text-center">
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <input
+              type="text"
+              name="name"
+              placeholder="Your name"
+              value={form.name}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
+          </div>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={form.email}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
+          </div>
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input
+              type="password"
+              name="password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
+          </div>
 
-          <select
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="hotel">Hotel</option>
-            <option value="seller">Seller</option>
-          </select>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
+            <select
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            >
+              <option value="hotel">Hotel</option>
+              <option value="seller">Seller</option>
+            </select>
+          </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-70"
           >
-            Signup
+            {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-gray-600">
+        <p className="mt-5 text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <Link to="/login" className="text-blue-600 hover:underline">
+          <Link to="/login" className="text-blue-600 hover:underline font-medium">
             Login here
           </Link>
         </p>
