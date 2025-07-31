@@ -1,60 +1,54 @@
-// server/controllers/authController.js
-import User from '../models/User.js';
+// controllers/authController.js
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import Hotel from '../models/Hotel.js';
 
-// Generate JWT
-const generateToken = (user) => {
-  return jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: '7d' }
-  );
-};
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
-// Signup Controller
-export const signupUser = async (req, res) => {
-  const { email, password, role } = req.body;
-
+// HOTEL REGISTER
+export const hotelRegister = async (req, res) => {
   try {
-    const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ message: 'User already exists' });
+    const { name, email, password, phone, address, type } = req.body;
 
-    const user = await User.create({ email, password, role });
+    const existingHotel = await Hotel.findOne({ email });
+    if (existingHotel) return res.status(400).json({ message: 'Hotel already exists' });
 
-    res.status(201).json({
-      message: 'Signup successful',
-      token: generateToken(user),
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newHotel = new Hotel({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      address,
+      type,
     });
-  } catch (err) {
-    res.status(500).json({ message: 'Signup error', error: err.message });
+
+    await newHotel.save();
+
+    const token = jwt.sign({ id: newHotel._id }, JWT_SECRET, { expiresIn: '7d' });
+    res.status(201).json({ token, hotel: newHotel });
+  } catch (error) {
+    console.error('Hotel Register Error:', error);
+    res.status(500).json({ message: 'Server Error' });
   }
 };
 
-// Login Controller
-export const loginUser = async (req, res) => {
-  const { email, password, role } = req.body;
-
+// HOTEL LOGIN
+export const hotelLogin = async (req, res) => {
   try {
-    const user = await User.findOne({ email });
+    const { email, password } = req.body;
 
-    if (!user || !(await user.matchPassword(password))) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    const hotel = await Hotel.findOne({ email });
+    if (!hotel) return res.status(404).json({ message: 'Hotel not found' });
 
-    if (role && user.role !== role) {
-      return res.status(403).json({ message: `User is not a ${role}` });
-    }
+    const isMatch = await bcrypt.compare(password, hotel.password);
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    res.json({
-      message: 'Login successful',
-      token: generateToken(user),
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (err) {
-    res.status(500).json({ message: 'Login error', error: err.message });
+    const token = jwt.sign({ id: hotel._id }, JWT_SECRET, { expiresIn: '7d' });
+    res.status(200).json({ token, hotel });
+  } catch (error) {
+    console.error('Hotel Login Error:', error);
+    res.status(500).json({ message: 'Server Error' });
   }
 };

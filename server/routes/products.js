@@ -1,18 +1,44 @@
-// routes/products.js
+import mongoose from 'mongoose';
 
-import express from 'express';
-import {
-  addProduct,
-  getAllProducts,
-  updateProduct,
-  deleteProduct
-} from '../controllers/productController.js';
+const productSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'Product name is required'],
+      trim: true,
+    },
+    image: {
+      type: String,
+      default: '',
+    },
+    price: {
+      type: Number,
+      required: [true, 'Price is required'],
+      min: [0, 'Price must be positive'],
+    },
+    description: {
+      type: String,
+      default: '',
+    },
+    category: {
+      type: String,
+      required: [true, 'Category is required'],
+    },
+    stock: {
+      type: Number,
+      default: 0,
+      min: [0, 'Stock cannot be negative'],
+    },
+    sellerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const router = express.Router();
-
-router.post('/', addProduct);
-router.get('/', getAllProducts);
-router.put('/:id', updateProduct);
-router.delete('/:id', deleteProduct);
-
-export default router;
+const Product = mongoose.model('Product', productSchema);
+export default Product;

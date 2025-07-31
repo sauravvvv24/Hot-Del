@@ -4,49 +4,48 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 
-import userRoutes from './routes/userRoutes.js';    // user + profile routes
 import productRoutes from './routes/productRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
-import authRoutes from './routes/auth.js';
+import userRoutes from './routes/userRoutes.js';
+import profileRoutes from './routes/profileRoutes.js';
+import cartRoutes from './routes/cartRoutes.js';
 
 dotenv.config();
+
 const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json()); // parse JSON body
+app.use(express.json());
 
-// Health check route
-app.get('/health', (req, res) => res.send('API is running'));
+// API Routes
+app.use('/api/products', productRoutes);      // Product listing, details
+app.use('/api/auth', authRoutes);             // Seller & hotel auth
+app.use('/api/orders', orderRoutes);          // Order routes
+app.use('/api/users', userRoutes);            // User management
+app.use('/api/profile', profileRoutes);       // User/seller/hotel profile
+app.use('/api/cart', cartRoutes);             // Cart functionality
 
-// API routes
-app.use('/api/users', userRoutes);        // user & profile
-app.use('/api/products', productRoutes);  // products routes (CRUD with auth)
-app.use('/api/orders', orderRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/auth', authRoutes);
-
-// Global error handler (must be last middleware)
-app.use((err, req, res, next) => {
-  console.error('Error:', err.stack);
-  res.status(500).json({
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message,
-  });
+// Root Route
+app.get('/', (req, res) => {
+  res.send('✅ Hot-Del API is running...');
 });
 
-// Connect to MongoDB and start server
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+// DB Connection & Server Start
+const PORT = process.env.PORT || 5000;
+
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
   .then(() => {
     console.log('✅ MongoDB connected');
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running at: http://localhost:${PORT}`);
+    });
   })
   .catch((err) => {
-    console.error('❌ MongoDB connection error:', err.message);
+    console.error('❌ MongoDB connection failed:', err.message);
+    process.exit(1);
   });

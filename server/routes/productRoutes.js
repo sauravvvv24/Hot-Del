@@ -1,20 +1,17 @@
 import express from 'express';
-import {
-  addProduct,
-  getAllProducts,
-  updateProduct,
-  deleteProduct
-} from '../controllers/productController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import Product from '../models/Product.js';
 
 const router = express.Router();
 
-// Public: Get all products
-router.get('/', getAllProducts);
-
-// Protected routes (require login)
-router.post('/', protect, addProduct);
-router.put('/:id', protect, updateProduct);
-router.delete('/:id', protect, deleteProduct);
+// GET all products
+router.get('/', async (req, res) => {
+  try {
+    const products = await Product.find({});
+    res.json(products);
+  } catch (err) {
+    console.error('Error fetching products:', err.message);
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
+});
 
 export default router;
