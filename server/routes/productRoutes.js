@@ -1,17 +1,37 @@
 import express from 'express';
-import Product from '../models/Product.js';
+import { 
+  getAllProducts, 
+  getProductsByCategory, 
+  getCategories, 
+  getFeaturedProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getMyProducts,
+  getProductById
+} from '../controllers/productController.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// GET all products
-router.get('/', async (req, res) => {
-  try {
-    const products = await Product.find({});
-    res.json(products);
-  } catch (err) {
-    console.error('Error fetching products:', err.message);
-    res.status(500).json({ error: 'Failed to fetch products' });
-  }
+// Test route
+router.get('/test', (req, res) => {
+  res.json({ message: 'Product routes are working!' });
 });
+
+// Public routes
+router.get('/', getAllProducts);
+router.get('/categories', getCategories);
+router.get('/featured', getFeaturedProducts);
+router.get('/category/:category', getProductsByCategory);
+
+// Protected routes (require authentication)
+router.get('/mine', authMiddleware, getMyProducts);
+router.post('/', authMiddleware, createProduct);
+router.put('/:id', authMiddleware, updateProduct);
+router.delete('/:id', authMiddleware, deleteProduct);
+
+// Public route for getting single product (must be after /mine)
+router.get('/:id', getProductById);
 
 export default router;
