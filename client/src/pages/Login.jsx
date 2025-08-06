@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '', rememberMe: false });
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -16,33 +16,45 @@ const Login = () => {
       ...form,
       [name]: type === 'checkbox' ? checked : value,
     });
-    if (error) setError('');
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     if (isLoading) return;
     setIsLoading(true);
-
     try {
-      const res = await axios.post('http://localhost:5000/api/users/login', {
+      // First try to login as a seller
+      let res = await axios.post('http://localhost:3000/api/auth/seller-login', {
         email: form.email,
         password: form.password,
       });
-
-      const userData = res.data;
-      login(userData);
-
+      const userData = res.data.user;
+      const token = res.data.token;
+      login(userData, token);
       const storage = form.rememberMe ? localStorage : sessionStorage;
       storage.setItem('userInfo', JSON.stringify(userData));
-
+      storage.setItem('token', token);
       const role = userData.role;
       if (role === 'admin') navigate('/admin-panel');
       else if (role === 'seller') navigate('/seller-dashboard');
       else navigate('/products');
-    } catch (err) {
-      const msg = err.response?.data?.message || 'Login failed. Please check your credentials.';
-      setError(msg);
+    } catch (sellerError) {
+      // If seller login fails, try hotel login
+      try {
+        const res = await axios.post('http://localhost:3000/api/auth/hotel-login', {
+          email: form.email,
+          password: form.password,
+        });
+        const hotelData = res.data.hotel;
+        const token = res.data.token;
+        login(hotelData, token);
+        const storage = form.rememberMe ? localStorage : sessionStorage;
+        storage.setItem('token', token);
+        navigate('/hotel-dashboard');
+      } catch (hotelError) {
+        const msg = hotelError.response?.data?.message || 'Login failed. Please check your credentials.';
+        toast.error(msg);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -73,12 +85,6 @@ const Login = () => {
           <div className="md:grid md:grid-cols-2">
             {/* Form Section */}
             <div className="p-8 sm:p-10">
-              {error && (
-                <div className="mb-6 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
-
               <form onSubmit={handleLogin} className="space-y-6">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>

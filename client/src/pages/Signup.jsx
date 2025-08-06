@@ -37,10 +37,32 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/register', {
+      let endpoint = '';
+      let payload = {};
+
+      if (form.role === 'hotel') {
+        endpoint = 'http://localhost:3000/api/auth/hotel-register';
+        payload = {
+          name: form.name,
+          email: form.email,
+          password: form.password,
+          phone: '', // You might want to add phone field to the form
+          address: '', // You might want to add address field to the form
+          type: 'business' // Default type
+        };
+      } else if (form.role === 'seller') {
+        endpoint = 'http://localhost:3000/api/auth/seller-register';
+        payload = {
+          name: form.name,
+          email: form.email,
+          password: form.password
+        };
+      }
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();

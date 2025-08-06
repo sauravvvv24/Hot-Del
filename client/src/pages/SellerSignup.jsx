@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 const SellerSignup = () => {
   const [form, setForm] = useState({
@@ -42,13 +43,14 @@ const SellerSignup = () => {
     setIsLoading(true);
 
     try {
-      await axios.post('http://localhost:5000/api/auth/register', {
-        ...form,
-        role: 'seller',
+      const response = await axios.post('http://localhost:3000/api/auth/seller-register', {
+        name: form.name,
+        email: form.email,
+        password: form.password
       });
 
       // Show success and redirect
-      alert('Seller registration successful! Please log in.');
+      toast.success('Seller registration successful! Please log in.');
       navigate('/seller-login');
     } catch (err) {
       const errorMsg = err.response?.data?.message || 'Signup failed. Please try again.';

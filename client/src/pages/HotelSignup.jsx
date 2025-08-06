@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 const HotelSignup = () => {
   const [form, setForm] = useState({ 
@@ -40,13 +41,20 @@ const HotelSignup = () => {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      const payload = { ...form, role: 'hotel' };
-      const response = await axios.post('http://localhost:5000/api/auth/signup', payload);
-      alert(response.data.msg || 'Signup successful!');
+      const payload = { 
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        phone: form.phone,
+        address: form.address,
+        type: form.hotelType
+      };
+      const response = await axios.post('http://localhost:3000/api/auth/hotel-register', payload);
+      toast.success('Hotel registration successful! Please log in.');
       navigate('/hotel-login');
     } catch (err) {
-      const msg = err.response?.data?.msg || err.message;
-      alert(`Signup failed: ${msg}`);
+      const msg = err.response?.data?.message || err.message;
+      toast.error(`Signup failed: ${msg}`);
       if (msg.includes('email')) {
         setErrors(prev => ({ ...prev, email: msg }));
       }

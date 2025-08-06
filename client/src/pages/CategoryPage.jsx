@@ -1,26 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import CategorySelector from '../components/CategorySelector';
 import ProductCard from '../components/ProductCard';
+import CategorySelector from '../components/CategorySelector';
 
-const ProductListing = () => {
+const CategoryPage = () => {
+  const { category } = useParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState('desc');
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    const category = searchParams.get('category');
     const search = searchParams.get('search');
     const sort = searchParams.get('sort');
     const order = searchParams.get('order');
 
-    if (category) setSelectedCategory(category);
     if (search) setSearchTerm(search);
     if (sort) setSortBy(sort);
     if (order) setSortOrder(order);
@@ -28,19 +26,16 @@ const ProductListing = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, searchTerm, sortBy, sortOrder]);
+  }, [category, searchTerm, sortBy, sortOrder]);
 
   const fetchProducts = async () => {
     setLoading(true);
     setError('');
 
     try {
-      let url = 'http://localhost:3000/api/products?';
+      let url = `http://localhost:3000/api/products/category/${encodeURIComponent(category)}?`;
       const params = new URLSearchParams();
 
-      if (selectedCategory) {
-        params.append('category', selectedCategory);
-      }
       if (searchTerm) {
         params.append('search', searchTerm);
       }
@@ -56,22 +51,11 @@ const ProductListing = () => {
       setProducts(response.data || []);
     } catch (error) {
       console.error('Error fetching products:', error);
-      setError('Failed to load products');
+      setError('Failed to load products for this category');
       setProducts([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    const newParams = new URLSearchParams(searchParams);
-    if (category) {
-      newParams.set('category', category);
-    } else {
-      newParams.delete('category');
-    }
-    setSearchParams(newParams);
   };
 
   const handleSearch = (e) => {
@@ -96,6 +80,16 @@ const ProductListing = () => {
     setSearchParams(newParams);
   };
 
+  const getCategoryDisplayName = (categoryPath) => {
+    const categoryMap = {
+      'Dairy Products': 'Dairy Products',
+      'Fruits': 'Fresh Fruits',
+      'Vegetables': 'Fresh Vegetables',
+      'Frozen Products': 'Frozen Products'
+    };
+    return categoryMap[categoryPath] || categoryPath;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -113,10 +107,10 @@ const ProductListing = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {selectedCategory ? `${selectedCategory} Products` : 'All Products'}
+            {getCategoryDisplayName(category)} Products
           </h1>
           <p className="text-gray-600">
-            {products.length} product{products.length !== 1 ? 's' : ''} found
+            {products.length} product{products.length !== 1 ? 's' : ''} found in {getCategoryDisplayName(category)}
           </p>
         </div>
 
@@ -126,7 +120,7 @@ const ProductListing = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search products..."
+                placeholder={`Search ${getCategoryDisplayName(category)}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -159,11 +153,13 @@ const ProductListing = () => {
           </div>
         </div>
 
-        {/* Category Selector */}
-        <CategorySelector
-          selectedCategory={selectedCategory}
-          onCategorySelect={handleCategorySelect}
-        />
+        {/* Category Navigation */}
+        <div className="mb-6">
+          <CategorySelector 
+            selectedCategory={category} 
+            showAll={true}
+          />
+        </div>
 
         {/* Error Message */}
         {error && (
@@ -178,9 +174,9 @@ const ProductListing = () => {
             <div className="text-gray-400 text-6xl mb-4">📦</div>
             <h3 className="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
             <p className="text-gray-500">
-              {searchTerm || selectedCategory 
-                ? 'Try adjusting your search or category filter'
-                : 'No products are available at the moment'
+              {searchTerm 
+                ? `No ${getCategoryDisplayName(category)} products match your search`
+                : `No products available in ${getCategoryDisplayName(category)} category`
               }
             </p>
           </div>
@@ -196,4 +192,4 @@ const ProductListing = () => {
   );
 };
 
-export default ProductListing;
+export default CategoryPage; 

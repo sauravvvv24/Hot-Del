@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import ProductListing from './pages/ProductListing';
 import ProductDetail from './pages/ProductDetail';
+import CategoryPage from './pages/CategoryPage';
 import HotelSignup from './pages/HotelSignup';
 import SellerSignup from './pages/SellerSignup';
 import SellerLogin from './pages/SellerLogin';
@@ -18,6 +19,12 @@ import Orders from './pages/Orders';
 import AdminPanel from './pages/AdminPanel';
 import Signup from './pages/Signup'; // ✅ Unified Signup
 import Login from './pages/Login';   // ✅ Unified Login (optional)
+import Checkout from './pages/Checkout';
+import OrderConfirmation from './pages/OrderConfirmation';
+import Search from './pages/Search';
+import HotelDashboard from './pages/HotelDashboard';
+import SellerDashboard from './pages/SellerDashboard';
+import PrivateRoute from './components/PrivateRoute';
 
 const App = () => {
   return (
@@ -28,6 +35,7 @@ const App = () => {
           {/* Home and Products */}
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductListing />} />
+          <Route path="/products/category/:category" element={<CategoryPage />} />
           <Route path="/products/:productId" element={<ProductDetail />} />
 
           {/* Unified Auth (optional, remove if not using these) */}
@@ -41,15 +49,22 @@ const App = () => {
           <Route path="/seller-login" element={<SellerLogin />} />
 
           {/* Seller-Specific */}
-          <Route path="/add-product" element={<AddProduct />} />
-          <Route path="/my-products" element={<MyProducts />} />
+          <Route path="/dashboard/seller" element={<PrivateRoute allowedRoles={['seller']}><SellerDashboard /></PrivateRoute>} />
+          <Route path="/seller/add-product" element={<PrivateRoute allowedRoles={['seller']}><AddProduct /></PrivateRoute>} />
+          <Route path="/seller/edit-product/:id" element={<PrivateRoute allowedRoles={['seller']}><AddProduct editMode={true} /></PrivateRoute>} />
+          <Route path="/seller/orders" element={<PrivateRoute allowedRoles={['seller']}><Orders /></PrivateRoute>} />
+          <Route path="/my-products" element={<PrivateRoute allowedRoles={['seller']}><MyProducts /></PrivateRoute>} />
 
           {/* Hotel-Specific */}
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/orders" element={<Orders />} />
+          <Route path="/cart" element={<PrivateRoute allowedRoles={['hotel']}><Cart /></PrivateRoute>} />
+          <Route path="/checkout" element={<PrivateRoute allowedRoles={['hotel']}><Checkout /></PrivateRoute>} />
+          <Route path="/order-confirmation" element={<PrivateRoute allowedRoles={['hotel']}><OrderConfirmation /></PrivateRoute>} />
+          <Route path="/dashboard/hotel" element={<PrivateRoute allowedRoles={['hotel']}><HotelDashboard /></PrivateRoute>} />
+          <Route path="/orders" element={<PrivateRoute allowedRoles={['hotel']}><Orders /></PrivateRoute>} />
+          <Route path="/search" element={<Search />} />
 
           {/* Admin Panel */}
-          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin" element={<PrivateRoute allowedRoles={['admin']}><AdminPanel /></PrivateRoute>} />
 
           {/* Redirects for typos */}
           <Route path="/hotelsignup" element={<Navigate to="/hotel-signup" />} />

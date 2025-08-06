@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
@@ -48,7 +49,7 @@ const AdminPanel = () => {
       });
       fetchUsers();
     } catch {
-      alert('Failed to delete user');
+      toast.error('Failed to delete user');
     }
   };
 
@@ -60,7 +61,7 @@ const AdminPanel = () => {
       });
       fetchProducts();
     } catch {
-      alert('Failed to delete product');
+      toast.error('Failed to delete product');
     }
   };
 

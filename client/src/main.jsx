@@ -8,6 +8,7 @@ import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { HotelProvider } from './context/HotelContext';
+import { Toaster } from 'react-hot-toast';
 
 import './index.css'; // Tailwind CSS or global styles
 
@@ -17,6 +18,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <HotelProvider>
           <CartProvider>
+            <Toaster position="top-right" reverseOrder={false} />
             <App />
           </CartProvider>
         </HotelProvider>
