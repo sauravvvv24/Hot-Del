@@ -1,7 +1,7 @@
 // controllers/authController.js
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import Hotel from '../models/Hotel.js';
+import HotelModel from '../models/Hotel.js';
 import User from '../models/User.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
@@ -11,12 +11,12 @@ export const hotelRegister = async (req, res) => {
   try {
     const { name, email, password, phone, address, type } = req.body;
 
-    const existingHotel = await Hotel.findOne({ email });
+    const existingHotel = await HotelModel.findOne({ email });
     if (existingHotel) return res.status(400).json({ message: 'Hotel already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newHotel = new Hotel({
+    const newHotel = await HotelModel.create({
       name,
       email,
       password: hashedPassword,
@@ -25,7 +25,7 @@ export const hotelRegister = async (req, res) => {
       type,
     });
 
-    await newHotel.save();
+    
 
     const token = jwt.sign({ id: newHotel._id, role: 'hotel' }, JWT_SECRET, { expiresIn: '7d' });
     res.status(201).json({ token, hotel: newHotel });
@@ -35,12 +35,12 @@ export const hotelRegister = async (req, res) => {
   }
 };
 
-// HOTEL LOGIN
+
 export const hotelLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const hotel = await Hotel.findOne({ email });
+    const hotel = await HotelModel.findOne({ email });
     if (!hotel) return res.status(404).json({ message: 'Hotel not found' });
 
     const isMatch = await bcrypt.compare(password, hotel.password);

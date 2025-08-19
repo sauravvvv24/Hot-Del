@@ -35,7 +35,7 @@ const ProductListing = () => {
     setError('');
 
     try {
-      let url = 'http://localhost:3000/api/products?';
+      let url = 'http://localhost:3000/api/products/?';
       const params = new URLSearchParams();
 
       if (selectedCategory) {

@@ -10,5 +10,5 @@ const hotelSchema = new mongoose.Schema({
   type: { type: String, required: true },
 }, { timestamps: true });
 
-const Hotel = mongoose.model('Hotel', hotelSchema);
-export default Hotel;
+const HotelModel = mongoose.model('Hotel', hotelSchema);
+export default HotelModel;
