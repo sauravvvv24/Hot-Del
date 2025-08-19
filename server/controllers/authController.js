@@ -95,32 +95,37 @@ export const sellerRegister = async (req, res) => {
 
 // SELLER LOGIN
 export const sellerLogin = async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const { email, password } = req.body;
+    // Find seller by email
+    const seller = await User.findOne({ email });
+    if (!seller) return res.status(404).json({ message: 'Seller not found' });
 
-    const seller = await User.findOne({ email, role: 'seller' });
-    if (!seller) {
-      return res.status(404).json({ message: 'Seller not found' });
-    }
-
+    // Compare passwords
     const isMatch = await bcrypt.compare(password, seller.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    const token = jwt.sign({ id: seller._id, role: 'seller' }, JWT_SECRET, { expiresIn: '7d' });
-    res.status(200).json({ 
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: seller._id, role: 'seller' },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Send response
+    return res.status(200).json({
       message: 'Login successful',
       token,
       user: {
         _id: seller._id,
         name: seller.name,
         email: seller.email,
-        role: seller.role
-      }
+        role: seller.role,
+      },
     });
   } catch (error) {
     console.error('Seller Login Error:', error);
-    res.status(500).json({ message: 'Server Error' });
+    return res.status(500).json({ message: 'Server Error' });
   }
 };
